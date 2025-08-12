@@ -43,7 +43,7 @@ jobs:
           lfs: true
 
       - name: Repo Sync
-        uses: ./.github/actions/repo-sync
+        uses: ./.github/actions/repo-sync.yml
         with:
           manifest: ${{ inputs.manifest }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
