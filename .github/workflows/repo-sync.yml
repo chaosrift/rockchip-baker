@@ -42,8 +42,8 @@ jobs:
           fetch-depth: 1
           lfs: true
 
-      - name: Build OpenST Image
-        uses: ./
+      - name: Repo Sync
+        uses: ./.github/actions/repo-sync
         with:
           manifest: ${{ inputs.manifest }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
