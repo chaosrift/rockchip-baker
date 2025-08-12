@@ -5,7 +5,7 @@ on:
     inputs:
       manifest:
         description: 'manifest to sync'
-        required: true
+        required: false
         default: ''
         type: string
 
@@ -47,4 +47,3 @@ jobs:
         with:
           manifest: ${{ inputs.manifest }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
-          
