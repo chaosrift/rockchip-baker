@@ -10,8 +10,8 @@ on:
         type: string
 
 env:
-  RECIPE_REP: 'diverger/openst-build'
-  RECIPE_REF: 'main'
+  RECIPE_REP: 'diverger/manifest-rockchip'
+  RECIPE_REF: 'handy'
   RECIPE_DIR: "."
 
 jobs:
