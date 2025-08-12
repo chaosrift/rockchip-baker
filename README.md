@@ -1,0 +1,1 @@
+This repo should be used companion with the manifest-rockchip repo.
