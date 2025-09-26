@@ -19,12 +19,11 @@ on:
         options:
           - ubuntu-22.04
           - ubuntu-24.04
-          - '["self-hosted","linux","x64"]'
 
       proxy:
         description: 'Optional proxy URL to pass to the action (e.g. http://user:pass@proxy:3128)'
         required: false
-        default: 'http://192.168.50.110:10808'
+        default: ''
         type: string
 
 env:
