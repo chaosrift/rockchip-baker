@@ -26,20 +26,6 @@ jobs:
     timeout-minutes: 360  # 6 hours max
 
     steps:
-      - name: Get more disk space
-        # Skip aggressive disk cleanup on self-hosted runners to avoid
-        # deleting other jobs' data or system files. This step will only
-        # run when the runner is NOT labeled `self-hosted`.
-        if: ${{ !contains(github.runner.labels, 'self-hosted') }}
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true
-
       - name: Checkout build repository
         uses: actions/checkout@v4
         with:
