@@ -8,6 +8,11 @@ on:
         required: false
         default: ''
         type: string
+      runner:
+        description: 'Runner label to use for the job (e.g. self-hosted or ubuntu-latest)'
+        required: false
+        default: 'self-hosted'
+        type: string
 
 env:
   RECIPE_REP: 'diverger/manifest-rockchip'
@@ -16,12 +21,16 @@ env:
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     name: Sync
     timeout-minutes: 360  # 6 hours max
 
     steps:
       - name: Get more disk space
+        # Skip aggressive disk cleanup on self-hosted runners to avoid
+        # deleting other jobs' data or system files. This step will only
+        # run when the runner is NOT labeled `self-hosted`.
+        if: ${{ !contains(github.runner.labels, 'self-hosted') }}
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: false
