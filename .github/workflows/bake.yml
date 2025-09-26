@@ -11,7 +11,10 @@ on:
       runner:
         description: 'Runner label to use for the job (e.g. self-hosted or ubuntu-latest)'
         required: false
-        default: 'self-hosted'
+        # default to the self-hosted linux arm64 runner labels as a JSON array
+        # you may pass either a JSON array string like '["self-hosted","linux","arm64"]'
+        # or a single label such as 'self-hosted'
+        default: '["self-hosted","linux","x64"]'
         type: string
 
 env:
@@ -21,7 +24,10 @@ env:
 
 jobs:
   sync:
-    runs-on: ${{ inputs.runner }}
+    # Allow the input to be either a JSON array string (e.g. '["self-hosted","linux","arm64"]')
+    # or a single label (e.g. 'self-hosted'). If the input starts with '[' we parse it to JSON,
+    # otherwise we use the string directly.
+    runs-on: ${{ (startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner }}
     name: Sync
     timeout-minutes: 360  # 6 hours max
 
