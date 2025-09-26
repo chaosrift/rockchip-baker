@@ -15,7 +15,12 @@ on:
         # you may pass either a JSON array string like '["self-hosted","linux","arm64"]'
         # or a single label such as 'self-hosted'
         default: '["self-hosted","linux","x64"]'
-        type: string
+        type: choice
+        options:
+          - '["self-hosted","linux","x64"]'
+          - ubuntu-22.04
+          - ubuntu-24.04
+
       proxy:
         description: 'Optional proxy URL to pass to the action (e.g. http://user:pass@proxy:3128)'
         required: false
