@@ -14,12 +14,12 @@ on:
         # default to the self-hosted linux arm64 runner labels as a JSON array
         # you may pass either a JSON array string like '["self-hosted","linux","arm64"]'
         # or a single label such as 'self-hosted'
-        default: '["self-hosted","linux","x64"]'
+        default: ubuntu-22.04
         type: choice
         options:
-          - '["self-hosted","linux","x64"]'
           - ubuntu-22.04
           - ubuntu-24.04
+          - '["self-hosted","linux","x64"]'
 
       proxy:
         description: 'Optional proxy URL to pass to the action (e.g. http://user:pass@proxy:3128)'
