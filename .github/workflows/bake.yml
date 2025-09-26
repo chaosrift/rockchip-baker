@@ -16,6 +16,11 @@ on:
         # or a single label such as 'self-hosted'
         default: '["self-hosted","linux","x64"]'
         type: string
+      proxy:
+        description: 'Optional proxy URL to pass to the action (e.g. http://user:pass@proxy:3128)'
+        required: false
+        default: 'http://192.168.50.110:10808'
+        type: string
 
 env:
   RECIPE_REP: 'diverger/manifest-rockchip'
@@ -48,3 +53,4 @@ jobs:
         with:
           manifest: ${{ inputs.manifest }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
+          proxy: ${{ inputs.proxy }}
