@@ -37,7 +37,7 @@ env:
   RECIPE_DIR: "."
 
 jobs:
-  sync:
+  build:
     # Allow the input to be either a JSON array string (e.g. '["self-hosted","linux","arm64"]')
     # or a single label (e.g. 'self-hosted'). If the input starts with '[' we parse it to JSON,
     # otherwise we use the string directly.
@@ -74,24 +74,6 @@ jobs:
           manifest: ${{ inputs.manifest }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ inputs.proxy }}
-
-  build-uboot:
-    name: Build U-Boot
-    runs-on: ${{ (startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner }}
-    needs: sync
-    timeout-minutes: 360
-    steps:
-
-      - name: Checkout build repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.RECIPE_REP }}
-          ref: ${{ env.RECIPE_REF }}
-          token: ${{ secrets.GH_ACCESS_TOKEN }}
-          path: ${{ env.RECIPE_DIR }}
-          clean: false
-          fetch-depth: 1
-          lfs: true
 
       - name: Set up environment
         run: |
