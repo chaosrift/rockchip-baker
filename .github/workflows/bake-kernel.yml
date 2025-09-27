@@ -1,0 +1,78 @@
+name: Bake Kernel
+
+on:
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: 'manifest to sync'
+        required: false
+        default: ''
+        type: string
+      runner:
+        description: 'Runner label to use for the job (e.g. self-hosted or ubuntu-latest)'
+        required: false
+        default: ubuntu-22.04
+        type: choice
+        options:
+          - ubuntu-22.04
+          - ubuntu-24.04
+          - '["self-hosted","linux","arm64"]'
+      proxy:
+        description: 'Optional proxy URL to pass to the action (e.g. http://user:pass@proxy:3128)'
+        required: false
+        default: ''
+        type: string
+      chip_defconfig:
+        description: 'chip:defconfig to build kernel for (e.g. rk3588:rockchip_rk3588_ipc_evb1_v10_defconfig)'
+        required: false
+        default: ''
+        type: string
+
+env:
+  RECIPE_REP: 'diverger/manifest-rockchip'
+  RECIPE_REF: 'handy'
+  RECIPE_DIR: "."
+
+jobs:
+  build:
+    runs-on: ${{ (startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner }}
+    name: Build kernel on ${{ inputs.runner }}
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout build repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.RECIPE_REP }}
+          ref: ${{ env.RECIPE_REF }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          path: ${{ env.RECIPE_DIR }}
+          clean: false
+          fetch-depth: 1
+          lfs: true
+
+      - name: Repo Sync
+        uses: ./.github/actions/repo-sync
+        with:
+          manifest: ${{ inputs.manifest }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          proxy: ${{ inputs.proxy }}
+
+      - name: Inspect workspace after sync
+        run: |
+          echo "Working directory: $(pwd)"
+          echo "List repo root:"; ls -la .
+          echo "List device directory:"; ls -la device || true
+          echo "List device/rockchip:"; ls -la device/rockchip || true
+          echo "List device/rockchip/.chips:"; ls -la device/rockchip/.chips || true
+
+      - name: Set up environment
+        run: |
+          cd device || exit 1
+          ls -la
+
+      - name: Build Kernel (composite action)
+        uses: ./.github/actions/kernel-baker
+        with:
+          chip_defconfig: ${{ github.event.inputs.chip_defconfig }}
+          artifacts_name: kernel-artifacts
