@@ -1,4 +1,4 @@
-name: Bake Kernel
+name: Bake Rootfs
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ on:
         default: ''
         type: string
       chip_defconfig:
-        description: 'chip:defconfig to build kernel for (e.g. rk3588:rockchip_rk3588_ipc_evb1_v10_defconfig)'
+        description: 'chip:defconfig to initialize SDK for (e.g. rk3588:LubanCat_rk3588_ubuntu_gnome_defconfig)'
         required: false
         default: ''
         type: string
@@ -36,7 +36,7 @@ env:
 jobs:
   build:
     runs-on: ${{ (startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner }}
-    name: Build kernel on ${{ inputs.runner }}
+    name: Build on ${{ inputs.runner }}
     timeout-minutes: 360
 
     steps:
@@ -82,8 +82,8 @@ jobs:
           cd device || exit 1
           ls -la
 
-      - name: Build Kernel (composite action)
-        uses: ./.github/actions/kernel-baker
+      - name: Init SDK (composite action)
+        uses: ../manifest-rockchip/.github/actions/rootfs-baker
         with:
           chip_defconfig: ${{ github.event.inputs.chip_defconfig }}
-          artifacts_name: kernel-artifacts
+          artifacts_name: rootfs-artifacts
