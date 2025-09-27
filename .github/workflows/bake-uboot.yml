@@ -42,7 +42,7 @@ jobs:
     # or a single label (e.g. 'self-hosted'). If the input starts with '[' we parse it to JSON,
     # otherwise we use the string directly.
     runs-on: ${{ (startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner }}
-    name: Sync
+    name: Build on ${{ inputs.runner }}
     timeout-minutes: 360  # 6 hours max
 
     steps:
@@ -81,9 +81,9 @@ jobs:
           echo "List root:"; ls -la /
           echo "List repo root:"; ls -la .
           echo "List recipe dir:"; ls -la ${{ env.RECIPE_DIR }} || true
-          echo "List device/rockchip:"; ls -la device/rockchip || true
           echo "List device directory:"; ls -la device || true
-          echo "Find .chip entries:"; find . -maxdepth 4 -type d -name '.chip' -print || true
+          echo "List device/rockchip:"; ls -la device/rockchip || true
+          echo "List device/rockchip/.chips:"; ls -la device/rockchip/.chips || true
 
       - name: Set up environment
         run: |
