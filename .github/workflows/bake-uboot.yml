@@ -81,21 +81,25 @@ jobs:
     needs: sync
     timeout-minutes: 360
     steps:
-      - name: Checkout synced repo
+
+      - name: Checkout build repository
         uses: actions/checkout@v4
         with:
-          path: .
-          fetch-depth: 0
-
-      # prebuilts cache is handled inside the uboot-baker action
+          repository: ${{ env.RECIPE_REP }}
+          ref: ${{ env.RECIPE_REF }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          path: ${{ env.RECIPE_DIR }}
+          clean: false
+          fetch-depth: 1
+          lfs: true
 
       - name: Set up environment
         run: |
-          cd device-rockchip || exit 1
+          cd device || exit 1
           ls -la
 
       - name: Build U-Boot (composite action)
-        uses: ../../../manifest-rockchip/.github/actions/repo-sync/uboot-baker
+        uses: ./.github/actions/uboot-baker
         with:
           chip_defconfig: ${{ github.event.inputs.chip_defconfig }}
           artifacts_name: uboot-artifacts
