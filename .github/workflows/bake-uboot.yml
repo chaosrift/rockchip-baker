@@ -27,7 +27,7 @@ on:
         type: string
       chip_defconfig:
         description: 'chip:defconfig to build U-Boot for (e.g. rk3588:rockchip_rk3588_ipc_evb1_v10_defconfig)'
-        required: true
+        required: false
         default: ''
         type: string
 
