@@ -81,7 +81,7 @@ jobs:
           echo "List root:"; ls -la /
           echo "List repo root:"; ls -la .
           echo "List recipe dir:"; ls -la ${{ env.RECIPE_DIR }} || true
-          echo "List device-rockchip:"; ls -la device-rockchip || true
+          echo "List device/rockchip:"; ls -la device/rockchip || true
           echo "List device directory:"; ls -la device || true
           echo "Find .chip entries:"; find . -maxdepth 4 -type d -name '.chip' -print || true
 
