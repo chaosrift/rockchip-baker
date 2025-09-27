@@ -1,4 +1,4 @@
-name: Sync the repo
+name: Bake U-boot
 
 on:
   workflow_dispatch:
@@ -20,10 +20,14 @@ on:
           - ubuntu-22.04
           - ubuntu-24.04
           - '["self-hosted","linux","arm64"]'
-
       proxy:
         description: 'Optional proxy URL to pass to the action (e.g. http://user:pass@proxy:3128)'
         required: false
+        default: ''
+        type: string
+      chip_defconfig:
+        description: 'chip:defconfig to build U-Boot for (e.g. rk3588:rockchip_rk3588_ipc_evb1_v10_defconfig)'
+        required: true
         default: ''
         type: string
 
@@ -70,3 +74,28 @@ jobs:
           manifest: ${{ inputs.manifest }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ inputs.proxy }}
+
+  build-uboot:
+    name: Build U-Boot
+    runs-on: ${{ (startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner }}
+    needs: sync
+    timeout-minutes: 360
+    steps:
+      - name: Checkout synced repo
+        uses: actions/checkout@v4
+        with:
+          path: .
+          fetch-depth: 0
+
+      # prebuilts cache is handled inside the uboot-baker action
+
+      - name: Set up environment
+        run: |
+          cd device-rockchip || exit 1
+          ls -la
+
+      - name: Build U-Boot (composite action)
+        uses: ../../../manifest-rockchip/.github/actions/repo-sync/uboot-baker
+        with:
+          chip_defconfig: ${{ github.event.inputs.chip_defconfig }}
+          artifacts_name: uboot-artifacts
