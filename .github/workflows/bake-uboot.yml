@@ -75,6 +75,7 @@ jobs:
           manifest: ${{ inputs.manifest }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ inputs.proxy }}
+          project: u-boot
 
       - name: Inspect workspace after sync
         run: |
