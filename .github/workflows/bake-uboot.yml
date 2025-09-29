@@ -58,7 +58,7 @@ jobs:
           large-packages: true
           swap-storage: true
 
-      - name: Checkout build repository
+      - name: Checkout build repository (.github only)
         uses: actions/checkout@v4
         with:
           repository: ${{ env.RECIPE_REP }}
@@ -67,7 +67,9 @@ jobs:
           path: ${{ env.RECIPE_DIR }}
           clean: false
           fetch-depth: 1
-          lfs: true
+          sparse-checkout: |
+            .github
+          sparse-checkout-cone-mode: false
 
       - name: Repo Sync
         uses: ./.github/actions/repo-syncer
