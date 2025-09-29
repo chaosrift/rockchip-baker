@@ -78,6 +78,7 @@ jobs:
           project: u-boot
 
       - name: Inspect workspace after sync
+        if: false
         run: |
           echo "Working directory: $(pwd)"
           echo "List root:"; ls -la /

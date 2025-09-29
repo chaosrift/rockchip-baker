@@ -70,6 +70,7 @@ jobs:
           proxy: ${{ inputs.proxy }}
 
       - name: Inspect workspace after sync
+        if: false
         run: |
           echo "Working directory: $(pwd)"
           echo "List repo root:"; ls -la .
