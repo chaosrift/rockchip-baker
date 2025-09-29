@@ -75,7 +75,7 @@ jobs:
           manifest: ${{ inputs.manifest }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ inputs.proxy }}
-          project: u-boot, device-rockchip
+          project: u-boot, kernel-5.10, device-rockchip
 
       - name: Inspect workspace after sync
         if: false
