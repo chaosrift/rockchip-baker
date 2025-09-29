@@ -70,7 +70,7 @@ jobs:
           lfs: true
 
       - name: Repo Sync
-        uses: ./.github/actions/repo-sync
+        uses: ./.github/actions/repo-syncer
         with:
           manifest: ${{ inputs.manifest }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
