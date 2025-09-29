@@ -9,7 +9,7 @@ on:
         default: ''
         type: string
       runner:
-        description: 'Runner label to use for the job (e.g. self-hosted or ubuntu-latest)'
+        description: 'Runner label to use for the job'
         required: false
         default: ubuntu-22.04
         type: choice
