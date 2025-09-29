@@ -11,9 +11,6 @@ on:
       runner:
         description: 'Runner label to use for the job (e.g. self-hosted or ubuntu-latest)'
         required: false
-        # default to the self-hosted linux arm64 runner labels as a JSON array
-        # you may pass either a JSON array string like '["self-hosted","linux","arm64"]'
-        # or a single label such as 'self-hosted'
         default: ubuntu-22.04
         type: choice
         options:
