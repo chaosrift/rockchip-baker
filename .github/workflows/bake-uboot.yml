@@ -1,4 +1,4 @@
-name: Bake U-Boot
+name: Bake Uboot
 
 on:
   workflow_dispatch:
