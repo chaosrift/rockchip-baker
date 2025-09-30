@@ -45,17 +45,17 @@ jobs:
       manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
 
     steps:
-      - name: Get more disk space
-        if: ${{ contains(inputs.runner, 'self-hosted') == false }}
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap: true
+      # - name: Get more disk space
+      #   if: ${{ contains(inputs.runner, 'self-hosted') == false }}
+      #   uses: jlumbroso/free-disk-space@main
+      #   with:
+      #     tool-cache: false
+      #     android: true
+      #     dotnet: true
+      #     haskell: true
+      #     large-packages: true
+      #     docker-images: true
+      #     swap: true
 
       - name: Checkout build repository
         uses: actions/checkout@v4
