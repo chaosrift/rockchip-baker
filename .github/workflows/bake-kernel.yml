@@ -71,7 +71,7 @@ jobs:
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ inputs.proxy }}
 
-      - name: Set up environment
+      - name: Setup environment
         run: |
           cd device || exit 1
           ls -la
