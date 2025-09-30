@@ -23,9 +23,8 @@ on:
         default: ''
         type: string
       boards:
-        description: 'Comma-separated list of board configs to build (leave empty for all boards)'
-        required: false
-        default: ''
+        description: 'Comma-separated list of board configs to build (e.g. "handy_hpd5kx_rk3588_debian_gnome_linux6.1,LubanCat_rk3588_ubuntu_gnome")'
+        required: true
         type: string
   repository_dispatch:
     types: [build-boards]
@@ -62,6 +61,8 @@ jobs:
 
           if [ -z "$BOARDS_INPUT" ]; then
             echo "ERROR: No boards specified in input"
+            echo "Please provide a comma-separated list of board configs to build."
+            echo "Example: 'handy_hpd5kx_rk3588_debian_gnome_linux6.1,LubanCat_rk3588_ubuntu_gnome'"
             exit 1
           fi
 
@@ -123,8 +124,7 @@ jobs:
 
           # Set output
           {
-            echo "matrix<<"
-            echo "EOF"
+            echo "matrix<<EOF"
             printf '{"include":['
             first=true
             for board in "${BOARDS[@]}"; do
