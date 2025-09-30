@@ -1,4 +1,4 @@
-name: Multi-Board Parallel Build
+name: Bake Boards
 
 on:
   workflow_dispatch:
