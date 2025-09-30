@@ -69,6 +69,7 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Repo Sync
+        id: repo-sync
         uses: ./.github/actions/repo-syncer
         with:
           manifest: ${{ inputs.manifest }}

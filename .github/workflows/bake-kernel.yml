@@ -65,16 +65,12 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Repo Sync
+        id: repo-sync
         uses: ./.github/actions/repo-syncer
         with:
           manifest: ${{ inputs.manifest }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ inputs.proxy }}
-
-      - name: Setup environment
-        run: |
-          cd device || exit 1
-          ls -la
 
       - name: Build Kernel (composite action)
         uses: ./.github/actions/kernel-baker
