@@ -80,4 +80,5 @@ jobs:
         uses: ./.github/actions/kernel-baker
         with:
           chip_defconfig: ${{ github.event.inputs.chip_defconfig }}
+          merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
           artifacts_name: kernel-artifacts
