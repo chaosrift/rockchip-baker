@@ -22,8 +22,8 @@ on:
         required: false
         default: ''
         type: string
-      chip_defconfig:
-        description: 'chip:defconfig to initialize SDK for (e.g. rk3588:LubanCat_rk3588_ubuntu_gnome_defconfig)'
+      chip_board:
+        description: 'chip:board to initialize SDK for (e.g. rk3588:LubanCat_rk3588_ubuntu_gnome)'
         required: false
         default: ''
         type: string
@@ -75,6 +75,6 @@ jobs:
       - name: Build Rootfs (composite action)
         uses: ./.github/actions/rootfs-baker
         with:
-          chip_defconfig: ${{ github.event.inputs.chip_defconfig }}
+          chip_board: ${{ github.event.inputs.chip_board }}
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
           artifacts_name: rootfs-artifacts

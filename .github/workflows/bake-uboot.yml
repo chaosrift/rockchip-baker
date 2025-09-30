@@ -22,8 +22,8 @@ on:
         required: false
         default: ''
         type: string
-      chip_defconfig:
-        description: 'chip:defconfig to build U-Boot for (e.g. rk3588:rockchip_rk3588_ipc_evb1_v10_defconfig)'
+      chip_board:
+        description: 'chip:board to build U-Boot for (e.g. rk3588:rockchip_rk3588_ipc_evb1_v10)'
         required: false
         default: ''
         type: string
@@ -79,6 +79,6 @@ jobs:
       - name: Build U-Boot (composite action)
         uses: ./.github/actions/uboot-baker
         with:
-          chip_defconfig: ${{ github.event.inputs.chip_defconfig }}
+          chip_board: ${{ github.event.inputs.chip_board }}
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
           artifacts_name: uboot-artifacts

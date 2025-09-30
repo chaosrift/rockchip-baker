@@ -23,7 +23,7 @@ on:
         default: ''
         type: string
       boards:
-        description: 'Comma-separated list of board configs to build (e.g. "handy_hpd5kx_rk3588_debian_gnome_linux6.1,LubanCat_rk3588_ubuntu_gnome")'
+        description: 'Comma-separated list of board configs to build (e.g. "handy_hpd5kx_rk3588_debian_gnome_linux6.1_defconfig,LubanCat_rk3588_ubuntu_gnome_defconfig")'
         required: true
         type: string
   repository_dispatch:
@@ -99,8 +99,8 @@ jobs:
             # Create board display name (replace _ with spaces)
             display_name=$(echo "$board" | sed 's/_/ /g')
 
-            # Board config will be converted to defconfig by appending "_defconfig" in baker actions
-            printf '{"board_config":"%s","display_name":"%s"}' \
+            # Board config should include "_defconfig" suffix for build.sh
+            printf '{"board":"%s","display_name":"%s"}' \
               "$board" "$display_name"
           done
           printf ']}'
@@ -116,7 +116,7 @@ jobs:
               printf ','
             fi
             display_name=$(echo "$board" | sed 's/_/ /g')
-            printf '{"board_config":"%s","display_name":"%s"}' \
+            printf '{"board":"%s","display_name":"%s"}' \
               "$board" "$display_name"
           done
           printf ']}'
@@ -134,7 +134,7 @@ jobs:
                 printf ','
               fi
               display_name=$(echo "$board" | sed 's/_/ /g')
-              printf '{"board_config":"%s","display_name":"%s"}' \
+              printf '{"board":"%s","display_name":"%s"}' \
                 "$board" "$display_name"
             done
             printf ']}'
@@ -189,9 +189,9 @@ jobs:
       - name: Build U-Boot
         uses: ./.github/actions/uboot-baker
         with:
-          chip_defconfig: ${{ matrix.board_config }}
+          chip_board: ${{ matrix.board }}
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
-          artifacts_name: "uboot-${{ matrix.board_config }}"
+          artifacts_name: "uboot-${{ matrix.board }}"
 
   # Parallel Kernel builds
   build-kernel:
@@ -240,9 +240,9 @@ jobs:
       - name: Build Kernel
         uses: ./.github/actions/kernel-baker
         with:
-          chip_defconfig: ${{ matrix.board_config }}
+          chip_board: ${{ matrix.board }}
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
-          artifacts_name: "kernel-${{ matrix.board_config }}"
+          artifacts_name: "kernel-${{ matrix.board }}"
 
   # Parallel Rootfs builds
   build-rootfs:
@@ -282,14 +282,15 @@ jobs:
         uses: ./.github/actions/repo-syncer
         with:
           manifest: ${{ (github.event_name == 'workflow_dispatch' && inputs.manifest) || (github.event_name == 'repository_dispatch' && github.event.client_payload.manifest) || '' }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ (github.event_name == 'workflow_dispatch' && inputs.proxy) || (github.event_name == 'repository_dispatch' && github.event.client_payload.proxy) || '' }}
 
       - name: Build Rootfs
         uses: ./.github/actions/rootfs-baker
         with:
-          chip_defconfig: ${{ matrix.board_config }}
+          chip_board: ${{ matrix.board }}
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
-          artifacts_name: "rootfs-${{ matrix.board_config }}"
+          artifacts_name: "rootfs-${{ matrix.board }}"
 
   # Final image assembly (depends on all components)
   build-image:
@@ -329,18 +330,19 @@ jobs:
         uses: ./.github/actions/repo-syncer
         with:
           manifest: ${{ (github.event_name == 'workflow_dispatch' && inputs.manifest) || (github.event_name == 'repository_dispatch' && github.event.client_payload.manifest) || '' }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ (github.event_name == 'workflow_dispatch' && inputs.proxy) || (github.event_name == 'repository_dispatch' && github.event.client_payload.proxy) || '' }}
 
       # Build final image using image-baker action
       - name: Build Final Image
         uses: ./.github/actions/image-baker
         with:
-          chip_defconfig: ${{ matrix.board_config }}
+          chip_board: ${{ matrix.board }}
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
-          uboot_artifact_name: "uboot-${{ matrix.board_config }}"
-          kernel_artifact_name: "kernel-${{ matrix.board_config }}"
-          rootfs_artifact_name: "rootfs-${{ matrix.board_config }}"
-          artifacts_name: "final-image-${{ matrix.board_config }}"
+          uboot_artifact_name: "uboot-${{ matrix.board }}"
+          kernel_artifact_name: "kernel-${{ matrix.board }}"
+          rootfs_artifact_name: "rootfs-${{ matrix.board }}"
+          artifacts_name: "final-image-${{ matrix.board }}"
 
   # Summary job to report build status
   build-summary:
