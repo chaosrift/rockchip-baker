@@ -42,42 +42,8 @@ jobs:
     name: Setup Build Matrix
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
-      manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
 
     steps:
-      # - name: Get more disk space
-      #   if: ${{ contains(inputs.runner, 'self-hosted') == false }}
-      #   uses: jlumbroso/free-disk-space@main
-      #   with:
-      #     tool-cache: false
-      #     android: true
-      #     dotnet: true
-      #     haskell: true
-      #     large-packages: true
-      #     docker-images: true
-      #     swap: true
-
-      - name: Checkout build repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.RECIPE_REP }}
-          ref: ${{ env.RECIPE_REF }}
-          token: ${{ secrets.GH_ACCESS_TOKEN }}
-          path: ${{ env.RECIPE_DIR }}
-          clean: false
-          fetch-depth: 1
-          sparse-checkout: |
-            .github
-          sparse-checkout-cone-mode: false
-
-      - name: Repo Sync
-        id: repo-sync
-        uses: ./.github/actions/repo-syncer
-        with:
-          manifest: ${{ (github.event_name == 'workflow_dispatch' && inputs.manifest) || (github.event_name == 'repository_dispatch' && github.event.client_payload.manifest) || '' }}
-          token: ${{ secrets.GH_ACCESS_TOKEN }}
-          proxy: ${{ (github.event_name == 'workflow_dispatch' && inputs.proxy) || (github.event_name == 'repository_dispatch' && github.event.client_payload.proxy) || '' }}
-
       - name: Generate Build Matrix
         id: matrix
         shell: bash
@@ -325,7 +291,7 @@ jobs:
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
           artifacts_name: "rootfs-${{ matrix.board_config }}"
 
-    # Final image assembly (depends on all components)
+  # Final image assembly (depends on all components)
   build-image:
     needs: [setup, build-uboot, build-kernel, build-rootfs]
     runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
