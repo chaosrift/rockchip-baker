@@ -65,6 +65,7 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Repo Sync
+        id: repo-sync
         uses: ./.github/actions/repo-syncer
         with:
           manifest: ${{ inputs.manifest }}
@@ -75,4 +76,5 @@ jobs:
         uses: ./.github/actions/rootfs-baker
         with:
           chip_defconfig: ${{ github.event.inputs.chip_defconfig }}
+          merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
           artifacts_name: rootfs-artifacts
