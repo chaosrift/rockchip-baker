@@ -1,0 +1,409 @@
+name: Multi-Board Parallel Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: 'Manifest to sync'
+        required: false
+        default: ''
+        type: string
+      runner:
+        description: 'Runner label to use for all jobs'
+        required: false
+        default: ubuntu-22.04
+        type: choice
+        options:
+          - ubuntu-22.04
+          - ubuntu-24.04
+          - '["self-hosted","linux","arm64"]'
+      proxy:
+        description: 'Optional proxy URL (e.g. http://user:pass@proxy:3128)'
+        required: false
+        default: ''
+        type: string
+      boards:
+        description: 'Comma-separated list of board configs to build (leave empty for all boards)'
+        required: false
+        default: ''
+        type: string
+  repository_dispatch:
+    types: [build-boards]
+
+env:
+  RECIPE_REP: 'diverger/manifest-rockchip'
+  RECIPE_REF: 'handy'
+  RECIPE_DIR: "."
+
+jobs:
+  # Job to determine build matrix based on available boards
+  setup:
+    runs-on: ${{ (startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner }}
+    name: Setup Build Matrix
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
+
+    steps:
+      - name: Get more disk space
+        if: ${{ contains(inputs.runner, 'self-hosted') == false }}
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap: true
+
+      - name: Checkout build repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.RECIPE_REP }}
+          ref: ${{ env.RECIPE_REF }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          path: ${{ env.RECIPE_DIR }}
+          clean: false
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+          sparse-checkout-cone-mode: false
+
+      - name: Repo Sync
+        id: repo-sync
+        uses: ./.github/actions/repo-syncer
+        with:
+          manifest: ${{ (github.event_name == 'workflow_dispatch' && inputs.manifest) || (github.event_name == 'repository_dispatch' && github.event.client_payload.manifest) || '' }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          proxy: ${{ (github.event_name == 'workflow_dispatch' && inputs.proxy) || (github.event_name == 'repository_dispatch' && github.event.client_payload.proxy) || '' }}
+
+      - name: Generate Build Matrix
+        id: matrix
+        shell: bash
+        run: |
+          # Get boards from either workflow_dispatch inputs or repository_dispatch payload
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            BOARDS_INPUT="${{ inputs.boards }}"
+            echo "Using workflow_dispatch boards: $BOARDS_INPUT"
+          elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            BOARDS_INPUT="${{ github.event.client_payload.boards }}"
+            echo "Using repository_dispatch boards: $BOARDS_INPUT"
+          else
+            echo "ERROR: Unsupported event type: ${{ github.event_name }}"
+            exit 1
+          fi
+
+          if [ -z "$BOARDS_INPUT" ]; then
+            echo "ERROR: No boards specified in input"
+            exit 1
+          fi
+
+          # Parse boards from input (comma-separated list)
+          IFS=',' read -ra BOARDS <<< "$BOARDS_INPUT"
+
+          # Trim whitespace and validate boards are not empty
+          VALID_BOARDS=()
+          for board in "${BOARDS[@]}"; do
+            board=$(echo "$board" | xargs) # trim whitespace
+            if [ -n "$board" ]; then
+              VALID_BOARDS+=("$board")
+              echo "Added board: $board"
+            fi
+          done
+
+          if [ ${#VALID_BOARDS[@]} -eq 0 ]; then
+            echo "ERROR: No valid boards found in input"
+            exit 1
+          fi
+
+          BOARDS=("${VALID_BOARDS[@]}")
+
+          # Generate matrix JSON
+          printf '{"include":['
+          first=true
+          for board in "${BOARDS[@]}"; do
+            if [ "$first" = true ]; then
+              first=false
+            else
+              printf ','
+            fi
+
+            # Create board display name (replace _ with spaces)
+            display_name=$(echo "$board" | sed 's/_/ /g')
+
+            # Board config will be converted to defconfig by appending "_defconfig" in baker actions
+            printf '{"board_config":"%s","display_name":"%s"}' \
+              "$board" "$display_name"
+          done
+          printf ']}'
+
+          # Output matrix for debugging
+          echo "Generated matrix:"
+          printf '{"include":['
+          first=true
+          for board in "${BOARDS[@]}"; do
+            if [ "$first" = true ]; then
+              first=false
+            else
+              printf ','
+            fi
+            display_name=$(echo "$board" | sed 's/_/ /g')
+            printf '{"board_config":"%s","display_name":"%s"}' \
+              "$board" "$display_name"
+          done
+          printf ']}'
+          echo
+
+          # Set output
+          {
+            echo "matrix<<"
+            echo "EOF"
+            printf '{"include":['
+            first=true
+            for board in "${BOARDS[@]}"; do
+              if [ "$first" = true ]; then
+                first=false
+              else
+                printf ','
+              fi
+              display_name=$(echo "$board" | sed 's/_/ /g')
+              printf '{"board_config":"%s","display_name":"%s"}' \
+                "$board" "$display_name"
+            done
+            printf ']}'
+            echo
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+  # Parallel U-Boot builds
+  build-uboot:
+    needs: setup
+    runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
+    name: "U-Boot: ${{ matrix.display_name }}"
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+
+    steps:
+      - name: Get more disk space
+        if: ${{ contains(inputs.runner, 'self-hosted') == false }}
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap: true
+
+      - name: Checkout build repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.RECIPE_REP }}
+          ref: ${{ env.RECIPE_REF }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          path: ${{ env.RECIPE_DIR }}
+          clean: false
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+          sparse-checkout-cone-mode: false
+
+      - name: Repo Sync
+        id: repo-sync
+        uses: ./.github/actions/repo-syncer
+        with:
+          manifest: ${{ inputs.manifest }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          proxy: ${{ inputs.proxy }}
+
+      - name: Build U-Boot
+        uses: ./.github/actions/uboot-baker
+        with:
+          chip_defconfig: ${{ matrix.board_config }}
+          merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
+          artifacts_name: "uboot-${{ matrix.board_config }}"
+
+  # Parallel Kernel builds
+  build-kernel:
+    needs: setup
+    runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
+    name: "Kernel: ${{ matrix.display_name }}"
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+
+    steps:
+      - name: Get more disk space
+        if: ${{ contains(inputs.runner, 'self-hosted') == false }}
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap: true
+
+      - name: Checkout build repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.RECIPE_REP }}
+          ref: ${{ env.RECIPE_REF }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          path: ${{ env.RECIPE_DIR }}
+          clean: false
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+          sparse-checkout-cone-mode: false
+
+      - name: Repo Sync
+        id: repo-sync
+        uses: ./.github/actions/repo-syncer
+        with:
+          manifest: ${{ inputs.manifest }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          proxy: ${{ inputs.proxy }}
+
+      - name: Build Kernel
+        uses: ./.github/actions/kernel-baker
+        with:
+          chip_defconfig: ${{ matrix.board_config }}
+          merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
+          artifacts_name: "kernel-${{ matrix.board_config }}"
+
+  # Parallel Rootfs builds
+  build-rootfs:
+    needs: setup
+    runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
+    name: "Rootfs: ${{ matrix.display_name }}"
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          repository: diverger/manifest-rockchip
+          ref: handy
+          sparse-checkout: |
+            .github
+          sparse-checkout-cone-mode: false
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+
+      - name: Get more disk space
+        if: ${{ contains(inputs.runner, 'self-hosted') == false }}
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap: true
+
+      - name: Repo Sync
+        id: repo-sync
+        uses: ./.github/actions/repo-syncer
+        with:
+          manifest: ${{ inputs.manifest }}
+          proxy: ${{ inputs.proxy }}
+
+      - name: Build Rootfs
+        uses: ./.github/actions/rootfs-baker
+        with:
+          chip_defconfig: ${{ matrix.board_config }}
+          merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
+          artifacts_name: "rootfs-${{ matrix.board_config }}"
+
+    # Final image assembly (depends on all components)
+  build-image:
+    needs: [setup, build-uboot, build-kernel, build-rootfs]
+    runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
+    name: "Image: ${{ matrix.display_name }}"
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          repository: diverger/manifest-rockchip
+          ref: handy
+          sparse-checkout: |
+            .github
+          sparse-checkout-cone-mode: false
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+
+      - name: Get more disk space
+        if: ${{ contains(inputs.runner, 'self-hosted') == false }}
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap: true
+
+      - name: Repo Sync
+        id: repo-sync
+        uses: ./.github/actions/repo-syncer
+        with:
+          manifest: ${{ inputs.manifest }}
+          proxy: ${{ inputs.proxy }}
+
+      # Build final image using image-baker action
+      - name: Build Final Image
+        uses: ./.github/actions/image-baker
+        with:
+          chip_defconfig: ${{ matrix.board_config }}
+          merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
+          uboot_artifact_name: "uboot-${{ matrix.board_config }}"
+          kernel_artifact_name: "kernel-${{ matrix.board_config }}"
+          rootfs_artifact_name: "rootfs-${{ matrix.board_config }}"
+          artifacts_name: "final-image-${{ matrix.board_config }}"
+
+  # Summary job to report build status
+  build-summary:
+    if: ${{ always() }}
+    needs: [setup, build-uboot, build-kernel, build-rootfs, build-image]
+    runs-on: ubuntu-latest
+    name: Build Summary
+
+    steps:
+      - name: Generate Build Summary
+        shell: bash
+        run: |
+          echo "# Multi-Board Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Build Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- **Manifest**: ${{ inputs.manifest || 'default' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Runner**: ${{ inputs.runner }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Boards**: ${{ inputs.boards || 'all boards' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Build Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Setup | ${{ needs.setup.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| U-Boot | ${{ needs.build-uboot.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Kernel | ${{ needs.build-kernel.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Rootfs | ${{ needs.build-rootfs.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Final Image | ${{ needs.build-image.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "Check the individual job logs for detailed build information."
