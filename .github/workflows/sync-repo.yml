@@ -77,7 +77,9 @@ jobs:
           path: ${{ env.RECIPE_DIR }}
           clean: false
           fetch-depth: 1
-          lfs: true
+          sparse-checkout: |
+            .github
+          sparse-checkout-cone-mode: false
 
       - name: Repo Sync
         uses: ./.github/actions/repo-syncer

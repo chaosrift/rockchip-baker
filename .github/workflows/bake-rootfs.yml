@@ -60,23 +60,16 @@ jobs:
           path: ${{ env.RECIPE_DIR }}
           clean: false
           fetch-depth: 1
-          lfs: true
+          sparse-checkout: |
+            .github
+          sparse-checkout-cone-mode: false
 
       - name: Repo Sync
-        uses: ./.github/actions/repo-sync
+        uses: ./.github/actions/repo-syncer
         with:
           manifest: ${{ inputs.manifest }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ inputs.proxy }}
-
-      - name: Inspect workspace after sync
-        if: false
-        run: |
-          echo "Working directory: $(pwd)"
-          echo "List repo root:"; ls -la .
-          echo "List device directory:"; ls -la device || true
-          echo "List device/rockchip:"; ls -la device/rockchip || true
-          echo "List device/rockchip/.chips:"; ls -la device/rockchip/.chips || true
 
       - name: Set up environment
         run: |

@@ -51,7 +51,7 @@ jobs:
           large-packages: true
           swap-storage: true
 
-      - name: Checkout build repository (.github only)
+      - name: Checkout build repository
         uses: actions/checkout@v4
         with:
           repository: ${{ env.RECIPE_REP }}
@@ -70,15 +70,6 @@ jobs:
           manifest: ${{ inputs.manifest }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ inputs.proxy }}
-
-      - name: Inspect workspace after sync
-        if: false
-        run: |
-          echo "Working directory: $(pwd)"
-          echo "List repo root:"; ls -la .
-          echo "List device directory:"; ls -la device || true
-          echo "List device/rockchip:"; ls -la device/rockchip || true
-          echo "List device/rockchip/.chips:"; ls -la device/rockchip/.chips || true
 
       - name: Set up environment
         run: |
