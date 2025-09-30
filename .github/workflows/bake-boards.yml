@@ -315,8 +315,8 @@ jobs:
         id: repo-sync
         uses: ./.github/actions/repo-syncer
         with:
-          manifest: ${{ inputs.manifest }}
-          proxy: ${{ inputs.proxy }}
+          manifest: ${{ (github.event_name == 'workflow_dispatch' && inputs.manifest) || (github.event_name == 'repository_dispatch' && github.event.client_payload.manifest) || '' }}
+          proxy: ${{ (github.event_name == 'workflow_dispatch' && inputs.proxy) || (github.event_name == 'repository_dispatch' && github.event.client_payload.proxy) || '' }}
 
       - name: Build Rootfs
         uses: ./.github/actions/rootfs-baker
@@ -362,8 +362,8 @@ jobs:
         id: repo-sync
         uses: ./.github/actions/repo-syncer
         with:
-          manifest: ${{ inputs.manifest }}
-          proxy: ${{ inputs.proxy }}
+          manifest: ${{ (github.event_name == 'workflow_dispatch' && inputs.manifest) || (github.event_name == 'repository_dispatch' && github.event.client_payload.manifest) || '' }}
+          proxy: ${{ (github.event_name == 'workflow_dispatch' && inputs.proxy) || (github.event_name == 'repository_dispatch' && github.event.client_payload.proxy) || '' }}
 
       # Build final image using image-baker action
       - name: Build Final Image
