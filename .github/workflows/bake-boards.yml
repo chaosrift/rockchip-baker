@@ -197,7 +197,7 @@ jobs:
           haskell: true
           large-packages: true
           docker-images: true
-          swap: true
+          swap-storage: true
 
       - name: Checkout build repository
         uses: actions/checkout@v4
@@ -216,9 +216,9 @@ jobs:
         id: repo-sync
         uses: ./.github/actions/repo-syncer
         with:
-          manifest: ${{ inputs.manifest }}
+          manifest: ${{ (github.event_name == 'workflow_dispatch' && inputs.manifest) || (github.event_name == 'repository_dispatch' && github.event.client_payload.manifest) || '' }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
-          proxy: ${{ inputs.proxy }}
+          proxy: ${{ (github.event_name == 'workflow_dispatch' && inputs.proxy) || (github.event_name == 'repository_dispatch' && github.event.client_payload.proxy) || '' }}
 
       - name: Build U-Boot
         uses: ./.github/actions/uboot-baker
@@ -248,7 +248,7 @@ jobs:
           haskell: true
           large-packages: true
           docker-images: true
-          swap: true
+          swap-storage: true
 
       - name: Checkout build repository
         uses: actions/checkout@v4
@@ -267,9 +267,9 @@ jobs:
         id: repo-sync
         uses: ./.github/actions/repo-syncer
         with:
-          manifest: ${{ inputs.manifest }}
+          manifest: ${{ (github.event_name == 'workflow_dispatch' && inputs.manifest) || (github.event_name == 'repository_dispatch' && github.event.client_payload.manifest) || '' }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
-          proxy: ${{ inputs.proxy }}
+          proxy: ${{ (github.event_name == 'workflow_dispatch' && inputs.proxy) || (github.event_name == 'repository_dispatch' && github.event.client_payload.proxy) || '' }}
 
       - name: Build Kernel
         uses: ./.github/actions/kernel-baker
@@ -309,7 +309,7 @@ jobs:
           haskell: true
           large-packages: true
           docker-images: true
-          swap: true
+          swap-storage: true
 
       - name: Repo Sync
         id: repo-sync
@@ -356,7 +356,7 @@ jobs:
           haskell: true
           large-packages: true
           docker-images: true
-          swap: true
+          swap-storage: true
 
       - name: Repo Sync
         id: repo-sync
