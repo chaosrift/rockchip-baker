@@ -48,22 +48,25 @@ jobs:
         shell: bash
         run: |
 
+          # Source logging tool for pretty output
+          source ./manifest-rockchip/.github/scripts/logging/init-logging.sh
+
           # Get boards from either workflow_dispatch inputs or repository_dispatch payload
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             BOARDS_INPUT="${{ inputs.boards }}"
-            echo "Using workflow_dispatch boards: $BOARDS_INPUT"
+            display_alert "Info" "Using workflow_dispatch boards: $BOARDS_INPUT" "info"
           elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
             BOARDS_INPUT="${{ github.event.client_payload.boards }}"
-            echo "Using repository_dispatch boards: $BOARDS_INPUT"
+            display_alert "Info" "Using repository_dispatch boards: $BOARDS_INPUT" "info"
           else
-            echo "ERROR: Unsupported event type: ${{ github.event_name }}"
+            display_alert "Error" "Unsupported event type: ${{ github.event_name }}" "err"
             exit 1
           fi
 
           if [ -z "$BOARDS_INPUT" ]; then
-            echo "ERROR: No boards specified in input"
-            echo "Please provide a comma-separated list of board configs to build."
-            echo "Example: 'handy_hpd5kx_rk3588_debian_gnome_linux6.1,rockchip_rk3588_evb1_lp4_v10_amp'"
+            display_alert "Error" "No boards specified in input" "err"
+            display_alert "Info" "Please provide a comma-separated list of board configs to build." "info"
+            display_alert "Info" "Example: 'handy_hpd5kx_rk3588_debian_gnome_linux6.1,rockchip_rk3588_evb1_lp4_v10_amp'" "info"
             exit 1
           fi
 
@@ -76,12 +79,12 @@ jobs:
             board=$(echo "$board" | xargs) # trim whitespace
             if [ -n "$board" ]; then
               VALID_BOARDS+=("$board")
-              echo "Added board: $board"
+              display_alert "Info" "Added board: $board" "info"
             fi
           done
 
           if [ ${#VALID_BOARDS[@]} -eq 0 ]; then
-            echo "ERROR: No valid boards found in input"
+            display_alert "Error" "No valid boards found in input" "err"
             exit 1
           fi
 
@@ -95,13 +98,13 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-          # Pretty print matrix for debug (requires jq)
+          # Pretty print matrix using logging tool
           if command -v jq >/dev/null 2>&1; then
-            echo "Generated matrix (pretty):"
-            echo "$MATRIX_JSON" | jq .
+            PRETTY_MATRIX=$(echo "$MATRIX_JSON" | jq .)
           else
-            echo "Generated matrix: $MATRIX_JSON"
+            PRETTY_MATRIX="$MATRIX_JSON"
           fi
+          display_alert "Generated matrix:" "$PRETTY_MATRIX" "info"
 
   # Parallel U-Boot builds
   build-uboot:
