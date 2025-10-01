@@ -125,12 +125,11 @@ jobs:
   build-uboot:
     needs: setup
     runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
-    name: "U-Boot: ${{ matrix.display_name }}"
+    name: "U-Boot: ${{ matrix.board }}"
     timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
-
     steps:
       - name: Get more disk space
         if: ${{ !contains(runner.labels, 'self-hosted') }}
@@ -176,12 +175,11 @@ jobs:
   build-kernel:
     needs: setup
     runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
-    name: "Kernel: ${{ matrix.display_name }}"
+    name: "Kernel: ${{ matrix.board }}"
     timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
-
     steps:
       - name: Get more disk space
         if: ${{ !contains(runner.labels, 'self-hosted') }}
@@ -227,12 +225,11 @@ jobs:
   build-rootfs:
     needs: setup
     runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
-    name: "Rootfs: ${{ matrix.display_name }}"
+    name: "Rootfs: ${{ matrix.board }}"
     timeout-minutes: 240
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -275,12 +272,11 @@ jobs:
   build-image:
     needs: [setup, build-uboot, build-kernel, build-rootfs]
     runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
-    name: "Image: ${{ matrix.display_name }}"
+    name: "Image: ${{ matrix.board }}"
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
