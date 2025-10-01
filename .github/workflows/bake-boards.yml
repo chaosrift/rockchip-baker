@@ -118,6 +118,7 @@ jobs:
           else
             PRETTY_MATRIX="$MATRIX_JSON"
           fi
+
           display_alert "Generated matrix:" "$PRETTY_MATRIX" "info"
 
   # Parallel U-Boot builds
