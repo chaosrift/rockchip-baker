@@ -69,5 +69,6 @@ jobs:
         uses: ./.github/actions/uboot-baker
         with:
           chip_board: ${{ github.event.inputs.chip_board }}
+          if_use_cache: 'false'
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
           artifacts_name: uboot-artifacts
