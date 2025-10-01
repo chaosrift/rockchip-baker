@@ -131,17 +131,6 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
-      - name: Get more disk space
-        if: ${{ !contains(runner.labels, 'self-hosted') }}
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
 
       - name: Checkout build repository
         uses: actions/checkout@v4
@@ -181,17 +170,6 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
-      - name: Get more disk space
-        if: ${{ !contains(runner.labels, 'self-hosted') }}
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
 
       - name: Checkout build repository
         uses: actions/checkout@v4
@@ -241,17 +219,6 @@ jobs:
           sparse-checkout-cone-mode: false
           token: ${{ secrets.GH_ACCESS_TOKEN }}
 
-      - name: Get more disk space
-        if: ${{ !contains(runner.labels, 'self-hosted') }}
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
 
       - name: Repo Sync
         id: repo-sync
@@ -288,17 +255,6 @@ jobs:
           sparse-checkout-cone-mode: false
           token: ${{ secrets.GH_ACCESS_TOKEN }}
 
-      - name: Get more disk space
-        if: ${{ !contains(runner.labels, 'self-hosted') }}
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
 
       - name: Repo Sync
         id: repo-sync
