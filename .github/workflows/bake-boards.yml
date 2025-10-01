@@ -47,6 +47,7 @@ jobs:
         id: matrix
         shell: bash
         run: |
+
           # Get boards from either workflow_dispatch inputs or repository_dispatch payload
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             BOARDS_INPUT="${{ inputs.boards }}"
@@ -62,7 +63,7 @@ jobs:
           if [ -z "$BOARDS_INPUT" ]; then
             echo "ERROR: No boards specified in input"
             echo "Please provide a comma-separated list of board configs to build."
-            echo "Example: 'handy_hpd5kx_rk3588_debian_gnome_linux6.1,LubanCat_rk3588_ubuntu_gnome'"
+            echo "Example: 'handy_hpd5kx_rk3588_debian_gnome_linux6.1,rockchip_rk3588_evb1_lp4_v10_amp'"
             exit 1
           fi
 
@@ -86,61 +87,21 @@ jobs:
 
           BOARDS=("${VALID_BOARDS[@]}")
 
-          # Generate matrix JSON
-          printf '{"include":['
-          first=true
-          for board in "${BOARDS[@]}"; do
-            if [ "$first" = true ]; then
-              first=false
-            else
-              printf ','
-            fi
-
-            # Create board display name (replace _ with spaces)
-            display_name=$(echo "$board" | sed 's/_/ /g')
-
-            # Board config should include "_defconfig" suffix for build.sh
-            printf '{"board":"%s","display_name":"%s"}' \
-              "$board" "$display_name"
-          done
-          printf ']}'
-
-          # Output matrix for debugging
-          echo "Generated matrix:"
-          printf '{"include":['
-          first=true
-          for board in "${BOARDS[@]}"; do
-            if [ "$first" = true ]; then
-              first=false
-            else
-              printf ','
-            fi
-            display_name=$(echo "$board" | sed 's/_/ /g')
-            printf '{"board":"%s","display_name":"%s"}' \
-              "$board" "$display_name"
-          done
-          printf ']}'
-          echo
-
-          # Set output
+          # Generate and set matrix output (single loop, direct output)
+          MATRIX_JSON=$(printf '{"include":['; for i in "${!BOARDS[@]}"; do [ "$i" -ne 0 ] && printf ','; printf '{"board":"%s"}' "${BOARDS[$i]}"; done; printf ']}')
           {
             echo "matrix<<EOF"
-            printf '{"include":['
-            first=true
-            for board in "${BOARDS[@]}"; do
-              if [ "$first" = true ]; then
-                first=false
-              else
-                printf ','
-              fi
-              display_name=$(echo "$board" | sed 's/_/ /g')
-              printf '{"board":"%s","display_name":"%s"}' \
-                "$board" "$display_name"
-            done
-            printf ']}'
-            echo
+            echo "$MATRIX_JSON"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
+
+          # Pretty print matrix for debug (requires jq)
+          if command -v jq >/dev/null 2>&1; then
+            echo "Generated matrix (pretty):"
+            echo "$MATRIX_JSON" | jq .
+          else
+            echo "Generated matrix: $MATRIX_JSON"
+          fi
 
   # Parallel U-Boot builds
   build-uboot:
