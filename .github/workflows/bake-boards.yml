@@ -151,11 +151,11 @@ jobs:
           proxy: ${{ (github.event_name == 'workflow_dispatch' && inputs.proxy) || (github.event_name == 'repository_dispatch' && github.event.client_payload.proxy) || '' }}
 
       - name: Build U-Boot
-        uses: ./.github/actions/uboot-baker
+        uses: ./.github/actions/u-boot-baker
         with:
           chip_board: ${{ matrix.board }}
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
-          artifacts_name: "uboot-${{ matrix.board }}"
+          artifacts_name: "u-boot-${{ matrix.board }}"
 
   # Parallel Kernel builds
   build-kernel:
@@ -303,7 +303,7 @@ jobs:
         with:
           chip_board: ${{ matrix.board }}
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
-          uboot_artifact_name: "uboot-${{ matrix.board }}"
+          u-boot_artifact_name: "u-boot-${{ matrix.board }}"
           kernel_artifact_name: "kernel-${{ matrix.board }}"
           rootfs_artifact_name: "rootfs-${{ matrix.board }}"
           artifacts_name: "final-image-${{ matrix.board }}"
