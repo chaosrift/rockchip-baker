@@ -43,13 +43,27 @@ jobs:
       matrix: ${{ steps.matrix.outputs.matrix }}
 
     steps:
+
+      - name: Checkout build repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.RECIPE_REP }}
+          ref: ${{ env.RECIPE_REF }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          path: ${{ env.RECIPE_DIR }}
+          clean: false
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+          sparse-checkout-cone-mode: false
+
       - name: Generate Build Matrix
         id: matrix
         shell: bash
         run: |
 
           # Source logging tool for pretty output
-          source ./manifest-rockchip/.github/scripts/logging/init-logging.sh
+          source ./.github/scripts/logging/init-logging.sh
 
           # Get boards from either workflow_dispatch inputs or repository_dispatch payload
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
