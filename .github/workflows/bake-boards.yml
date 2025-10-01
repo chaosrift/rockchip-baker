@@ -23,7 +23,7 @@ on:
         default: ''
         type: string
       boards:
-        description: 'Comma-separated list of board configs to build (e.g. "handy_hpd5kx_rk3588_debian_gnome_linux6.1_defconfig,LubanCat_rk3588_ubuntu_gnome_defconfig")'
+        description: 'Comma-separated list of board configs to build (e.g. "handy_hpd5kx_rk3588_debian_gnome_linux6.1,rockchip_rk3588_evb1_lp4_v10_amp")'
         required: true
         type: string
   repository_dispatch:
