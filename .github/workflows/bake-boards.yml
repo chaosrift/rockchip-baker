@@ -125,7 +125,7 @@ jobs:
   build-uboot:
     needs: setup
     runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
-    name: "U-Boot: ${{ matrix.board }}"
+    name: "Uboot: ${{ matrix.board }}"
     timeout-minutes: 120
     strategy:
       fail-fast: false
