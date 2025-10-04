@@ -94,7 +94,6 @@ jobs:
       matrix: ${{ steps.matrix.outputs.matrix }}
 
     steps:
-
       - name: Checkout build repository
         uses: actions/checkout@v4
         with:
@@ -115,18 +114,6 @@ jobs:
 
           # Source logging tool for pretty output
           source ./.github/scripts/logging/init-logging.sh
-
-          # Get boards from either workflow_dispatch inputs or repository_dispatch payload
-          # if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          #   BOARDS_INPUT="${{ inputs.boards }}"
-          #   display_alert "Info" "Using workflow_dispatch boards: $BOARDS_INPUT" "info"
-          # elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
-          #   BOARDS_INPUT="${{ github.event.client_payload.boards }}"
-          #   display_alert "Info" "Using repository_dispatch boards: $BOARDS_INPUT" "info"
-          # else
-          #   display_alert "Error" "Unsupported event type: ${{ github.event_name }}" "err"
-          #   exit 1
-          # fi
 
           if [ -z "$BOARDS_TO_BUILD" ]; then
             display_alert "Error" "No boards specified in input" "err"
@@ -202,7 +189,6 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
-
       - name: Checkout build repository
         uses: actions/checkout@v4
         with:
@@ -330,7 +316,6 @@ jobs:
           sparse-checkout-cone-mode: false
           token: ${{ secrets.GH_ACCESS_TOKEN }}
 
-
       - name: Repo Sync
         id: repo-sync
         uses: ./.github/actions/repo-syncer
@@ -365,7 +350,6 @@ jobs:
             .github
           sparse-checkout-cone-mode: false
           token: ${{ secrets.GH_ACCESS_TOKEN }}
-
 
       - name: Repo Sync
         id: repo-sync
