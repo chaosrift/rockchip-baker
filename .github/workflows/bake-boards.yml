@@ -374,15 +374,10 @@ jobs:
           image_infos: ${{ toJson(matrix) }}
           build_type: ${{ env.BUILD_TYPE }}
           # OSS1 credentials
-          oss1_access_key: ${{ secrets.OSS1_ACCESS_KEY }}
-          oss1_secret_key: ${{ secrets.OSS1_SECRET_KEY }}
-          oss1_region: ${{ secrets.OSS1_REGION }}
-          oss1_bucket: ${{ secrets.OSS1_BUCKET }}
-          # OSS2 credentials
-          oss2_access_key: ${{ secrets.OSS2_ACCESS_KEY }}
-          oss2_secret_key: ${{ secrets.OSS2_SECRET_KEY }}
-          oss2_region: ${{ secrets.OSS2_REGION }}
-          oss2_bucket: ${{ secrets.OSS2_BUCKET }}
+          oss1_access_key: ${{ secrets.OSS_ACCESS_KEY }}
+          oss1_secret_key: ${{ secrets.OSS_SECRET_KEY }}
+          oss1_region: ${{ secrets.OSS_REGION }}
+          oss1_bucket: ${{ secrets.OSS_BUCKET }}
 
   # Summary job to report build status
   build-summary:
