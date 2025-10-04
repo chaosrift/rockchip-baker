@@ -1,5 +1,5 @@
 name: Bake Boards
-run-name: Bake Boards on ${{ inputs.runner }} for ${{ inputs.boards }}
+run-name: Bake Boards on ${{ github.event.inputs.runner || github.event.client_payload.runner || 'ubuntu-22.04' }} for ${{ github.event.inputs.boards || github.event.client_payload.boards }}
 
 on:
   workflow_dispatch:
