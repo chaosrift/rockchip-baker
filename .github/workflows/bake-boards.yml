@@ -369,7 +369,6 @@ jobs:
           u-boot_artifact_name: "u-boot-${{ matrix.board }}"
           kernel_artifact_name: "kernel-${{ matrix.board }}"
           rootfs_artifact_name: "rootfs-${{ matrix.board }}"
-          artifacts_name: "final-image-${{ matrix.board }}"
           release_tag: ${{ env.EFFECTIVE_RELEASE_TAG }}
           baker_repo: ${{ github.repository }}
           image_infos: ${{ toJson(matrix) }}
