@@ -9,6 +9,7 @@ on:
         required: false
         default: ''
         type: string
+
       runner:
         description: 'Runner label to use for all jobs'
         required: false
@@ -17,23 +18,44 @@ on:
         options:
           - ubuntu-22.04
           - ubuntu-24.04
-          - '["self-hosted","linux","arm64"]'
+          - '["self-hosted","linux","x64"]'
+
       proxy:
         description: 'Optional proxy URL (e.g. http://user:pass@proxy:3128)'
         required: false
         default: ''
         type: string
+
       boards:
         description: 'Comma-separated list of board configs to build (e.g. "handy_hpd5kx_rk3588_debian_gnome_linux6.1,rockchip_rk3588_evb1_lp4_v10_amp")'
         required: true
         type: string
+
+      build_ref:
+        description: 'Optional build reference (e.g. commit SHA or tag)'
+        required: false
+        default: ''
+        type: string
+
+      release_tag:
+        description: 'Release tag for the image'
+        required: false
+        type: string
+        default: ''
+
   repository_dispatch:
     types: [build-boards]
 
 env:
   RECIPE_REP: 'diverger/manifest-rockchip'
-  RECIPE_REF: 'handy'
+  RECIPE_REF: ${{ github.event.client_payload.build_ref || 'handy' }}
   RECIPE_DIR: "."
+
+  BOARDS_TO_BUILD: ${{ github.event.inputs.boards_to_build || github.event.client_payload.boards_to_build || 'handy-hpd5kx-aim7' }}
+  EFFECTIVE_TRIGGER_SOURCE: ${{ github.event.client_payload.trigger_source || github.event_name }}
+  EFFECTIVE_RELEASE_TAG: ${{ github.event.inputs.release_tag || github.event.client_payload.release_tag || '' }}
+  EFFECTIVE_RUNNER: ${{ github.event.inputs.runner || github.event.client_payload.runner || 'ubuntu-latest' }}
+  BUILD_TYPE: ${{ github.event.inputs.build_type || github.event.client_payload.build_type || 'nightly' }}
 
 jobs:
   # Job to determine build matrix based on available boards
