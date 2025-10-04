@@ -63,13 +63,32 @@ env:
   BOARDS_TO_BUILD: ${{ github.event.inputs.boards || github.event.client_payload.boards }}
   EFFECTIVE_TRIGGER_SOURCE: ${{ github.event.client_payload.trigger_source || github.event_name }}
   EFFECTIVE_RELEASE_TAG: ${{ github.event.inputs.release_tag || github.event.client_payload.release_tag || '' }}
-  EFFECTIVE_RUNNER: ${{ github.event.inputs.runner || github.event.client_payload.runner || 'ubuntu-latest' }}
   BUILD_TYPE: ${{ github.event.inputs.build_type || github.event.client_payload.build_type || 'nightly' }}
 
 jobs:
   # Job to determine build matrix based on available boards
   setup:
-    runs-on: ${{ (startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner }}
+    runs-on: >-
+      ${{
+        (
+          github.event_name == 'repository_dispatch'
+          && github.event.client_payload.runner != ''
+          && (
+            startsWith(github.event.client_payload.runner, '[')
+              && fromJson(github.event.client_payload.runner)
+              || github.event.client_payload.runner
+          )
+        )
+        || (
+          inputs.runner != ''
+          && (
+            startsWith(inputs.runner, '[')
+              && fromJson(inputs.runner)
+              || inputs.runner
+          )
+        )
+        || 'ubuntu-22.04'
+      }}
     name: Setup Build Matrix
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
@@ -156,7 +175,27 @@ jobs:
   # Parallel U-Boot builds
   build-uboot:
     needs: setup
-    runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
+    runs-on: >-
+      ${{
+        (
+          github.event_name == 'repository_dispatch'
+          && github.event.client_payload.runner != ''
+          && (
+            startsWith(github.event.client_payload.runner, '[')
+              && fromJson(github.event.client_payload.runner)
+              || github.event.client_payload.runner
+          )
+        )
+        || (
+          inputs.runner != ''
+          && (
+            startsWith(inputs.runner, '[')
+              && fromJson(inputs.runner)
+              || inputs.runner
+          )
+        )
+        || 'ubuntu-22.04'
+      }}
     name: "Uboot: ${{ matrix.board }}"
     timeout-minutes: 120
     strategy:
@@ -195,7 +234,27 @@ jobs:
   # Parallel Kernel builds
   build-kernel:
     needs: setup
-    runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
+    runs-on: >-
+      ${{
+        (
+          github.event_name == 'repository_dispatch'
+          && github.event.client_payload.runner != ''
+          && (
+            startsWith(github.event.client_payload.runner, '[')
+              && fromJson(github.event.client_payload.runner)
+              || github.event.client_payload.runner
+          )
+        )
+        || (
+          inputs.runner != ''
+          && (
+            startsWith(inputs.runner, '[')
+              && fromJson(inputs.runner)
+              || inputs.runner
+          )
+        )
+        || 'ubuntu-22.04'
+      }}
     name: "Kernel: ${{ matrix.board }}"
     timeout-minutes: 180
     strategy:
@@ -234,7 +293,27 @@ jobs:
   # Parallel Rootfs builds
   build-rootfs:
     needs: setup
-    runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
+    runs-on: >-
+      ${{
+        (
+          github.event_name == 'repository_dispatch'
+          && github.event.client_payload.runner != ''
+          && (
+            startsWith(github.event.client_payload.runner, '[')
+              && fromJson(github.event.client_payload.runner)
+              || github.event.client_payload.runner
+          )
+        )
+        || (
+          inputs.runner != ''
+          && (
+            startsWith(inputs.runner, '[')
+              && fromJson(inputs.runner)
+              || inputs.runner
+          )
+        )
+        || 'ubuntu-22.04'
+      }}
     name: "Rootfs: ${{ matrix.board }}"
     timeout-minutes: 240
     strategy:
@@ -270,7 +349,7 @@ jobs:
   # Final image assembly (depends on all components)
   build-image:
     needs: [setup, build-uboot, build-kernel, build-rootfs]
-    runs-on: ${{ (github.event_name == 'workflow_dispatch' && ((startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner)) || (github.event_name == 'repository_dispatch' && (github.event.client_payload.runner || 'ubuntu-22.04')) }}
+    runs-on: ${{ (github.event_name == 'repository_dispatch' && github.event.client_payload.runner && startsWith(github.event.client_payload.runner, '[') && fromJson(github.event.client_payload.runner)) || (github.event_name == 'repository_dispatch' && github.event.client_payload.runner) || (inputs.runner && startsWith(inputs.runner, '[') && fromJson(inputs.runner)) || inputs.runner || 'ubuntu-22.04' }}
     name: "Image: ${{ matrix.board }}"
     timeout-minutes: 60
     strategy:
