@@ -1,4 +1,5 @@
 name: Bake Kernel
+run-name: Bake Kernel on ${{ inputs.runner }} for ${{ inputs.chip_board }}
 
 on:
   workflow_dispatch:

@@ -1,4 +1,5 @@
 name: Bake Boards
+run-name: Bake Boards on ${{ inputs.runner }} for ${{ inputs.boards }}
 
 on:
   workflow_dispatch:

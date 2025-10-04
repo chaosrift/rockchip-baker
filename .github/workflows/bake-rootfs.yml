@@ -1,4 +1,5 @@
 name: Bake Rootfs
+run-name: Bake Rootfs on ${{ inputs.runner }} for ${{ inputs.chip_board }}
 
 on:
   workflow_dispatch:
@@ -23,7 +24,7 @@ on:
         default: ''
         type: string
       chip_board:
-        description: 'chip:board to initialize SDK for (e.g. rk3588:LubanCat_rk3588_ubuntu_gnome)'
+        description: 'chip:board to initialize SDK for (e.g. rk3588:rockchip_rk3588_ipc_evb1_v10)'
         required: false
         default: ''
         type: string

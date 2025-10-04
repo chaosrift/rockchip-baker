@@ -1,4 +1,5 @@
 name: Bake Uboot
+run-name: Bake Uboot on ${{ inputs.runner }} for ${{ inputs.chip_board }}
 
 on:
   workflow_dispatch:
