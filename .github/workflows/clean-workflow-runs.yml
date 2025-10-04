@@ -42,6 +42,8 @@ jobs:
 
       - name: Display cleanup summary
         run: |
+
+          # Display summary in the workflow run summary section
           echo "## 🗑️ Workflow Cleanup Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.clean.outputs.summary }}" >> $GITHUB_STEP_SUMMARY
