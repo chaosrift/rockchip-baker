@@ -363,6 +363,7 @@ jobs:
       - name: Build Final Image
         uses: ./.github/actions/image-baker
         with:
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
           chip_board: ${{ matrix.board }}
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
           u-boot_artifact_name: "u-boot-${{ matrix.board }}"
