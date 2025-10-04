@@ -37,6 +37,15 @@ on:
         default: ''
         type: string
 
+      build_type:
+        description: 'Type of build to perform'
+        required: false
+        type: choice
+        default: 'nightly'
+        options:
+          - nightly
+          - release
+
       release_tag:
         description: 'Release tag for the image'
         required: false
@@ -51,7 +60,7 @@ env:
   RECIPE_REF: ${{ github.event.client_payload.build_ref || 'handy' }}
   RECIPE_DIR: "."
 
-  BOARDS_TO_BUILD: ${{ github.event.inputs.boards_to_build || github.event.client_payload.boards_to_build || 'handy-hpd5kx-aim7' }}
+  BOARDS_TO_BUILD: ${{ github.event.inputs.boards || github.event.client_payload.boards }}
   EFFECTIVE_TRIGGER_SOURCE: ${{ github.event.client_payload.trigger_source || github.event_name }}
   EFFECTIVE_RELEASE_TAG: ${{ github.event.inputs.release_tag || github.event.client_payload.release_tag || '' }}
   EFFECTIVE_RUNNER: ${{ github.event.inputs.runner || github.event.client_payload.runner || 'ubuntu-latest' }}
@@ -89,26 +98,26 @@ jobs:
           source ./.github/scripts/logging/init-logging.sh
 
           # Get boards from either workflow_dispatch inputs or repository_dispatch payload
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            BOARDS_INPUT="${{ inputs.boards }}"
-            display_alert "Info" "Using workflow_dispatch boards: $BOARDS_INPUT" "info"
-          elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
-            BOARDS_INPUT="${{ github.event.client_payload.boards }}"
-            display_alert "Info" "Using repository_dispatch boards: $BOARDS_INPUT" "info"
-          else
-            display_alert "Error" "Unsupported event type: ${{ github.event_name }}" "err"
-            exit 1
-          fi
+          # if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          #   BOARDS_INPUT="${{ inputs.boards }}"
+          #   display_alert "Info" "Using workflow_dispatch boards: $BOARDS_INPUT" "info"
+          # elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+          #   BOARDS_INPUT="${{ github.event.client_payload.boards }}"
+          #   display_alert "Info" "Using repository_dispatch boards: $BOARDS_INPUT" "info"
+          # else
+          #   display_alert "Error" "Unsupported event type: ${{ github.event_name }}" "err"
+          #   exit 1
+          # fi
 
-          if [ -z "$BOARDS_INPUT" ]; then
+          if [ -z "$BOARDS_TO_BUILD" ]; then
             display_alert "Error" "No boards specified in input" "err"
             display_alert "Info" "Please provide a comma-separated list of board configs to build." "info"
-            display_alert "Info" "Example: 'handy_hpd5kx_rk3588_debian_gnome_linux6.1,rockchip_rk3588_evb1_lp4_v10_amp'" "info"
+            display_alert "Info" "Example: 'handy_hpd5kx_rk3588_debian_gnome_linux6.1, rockchip_rk3588_evb1_lp4_v10_amp'" "info"
             exit 1
           fi
 
           # Parse boards from input (comma-separated list)
-          IFS=',' read -ra BOARDS <<< "$BOARDS_INPUT"
+          IFS=',' read -ra BOARDS <<< "$BOARDS_TO_BUILD"
 
           # Trim whitespace and validate boards are not empty
           VALID_BOARDS=()
