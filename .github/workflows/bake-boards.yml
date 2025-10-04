@@ -44,7 +44,7 @@ on:
         default: ''
 
   repository_dispatch:
-    types: [build-boards]
+    types: [event-bake-boards]
 
 env:
   RECIPE_REP: 'diverger/manifest-rockchip'
