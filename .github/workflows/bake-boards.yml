@@ -216,6 +216,7 @@ jobs:
           chip_board: ${{ matrix.board }}
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
           artifacts_name: "u-boot-${{ matrix.board }}"
+          if_skip_build: 'true'
 
   # Parallel Kernel builds
   build-kernel:
@@ -275,6 +276,7 @@ jobs:
           chip_board: ${{ matrix.board }}
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
           artifacts_name: "kernel-${{ matrix.board }}"
+          if_skip_build: 'true'
 
   # Parallel Rootfs builds
   build-rootfs:
@@ -330,6 +332,7 @@ jobs:
           chip_board: ${{ matrix.board }}
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
           artifacts_name: "rootfs-${{ matrix.board }}"
+          if_skip_build: 'true'
 
   # Final image assembly (depends on all components)
   build-image:
