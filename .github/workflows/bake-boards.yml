@@ -308,15 +308,18 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
-      - name: Checkout Repository
+      - name: Checkout build repository
         uses: actions/checkout@v4
         with:
-          repository: diverger/manifest-rockchip
-          ref: handy
+          repository: ${{ env.RECIPE_REP }}
+          ref: ${{ env.RECIPE_REF }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          path: ${{ env.RECIPE_DIR }}
+          clean: false
+          fetch-depth: 1
           sparse-checkout: |
             .github
           sparse-checkout-cone-mode: false
-          token: ${{ secrets.GH_ACCESS_TOKEN }}
 
       - name: Repo Sync
         id: repo-sync
@@ -344,15 +347,18 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
-      - name: Checkout Repository
+      - name: Checkout build repository
         uses: actions/checkout@v4
         with:
-          repository: diverger/manifest-rockchip
-          ref: handy
+          repository: ${{ env.RECIPE_REP }}
+          ref: ${{ env.RECIPE_REF }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          path: ${{ env.RECIPE_DIR }}
+          clean: false
+          fetch-depth: 1
           sparse-checkout: |
             .github
           sparse-checkout-cone-mode: false
-          token: ${{ secrets.GH_ACCESS_TOKEN }}
 
       - name: Repo Sync
         id: repo-sync
