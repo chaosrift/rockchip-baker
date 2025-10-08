@@ -206,6 +206,7 @@ jobs:
         id: repo-sync
         uses: ./.github/actions/repo-syncer
         with:
+          manifest_ref: ${{ env.RECIPE_REF }}
           manifest: ${{ (github.event_name == 'workflow_dispatch' && inputs.manifest) || (github.event_name == 'repository_dispatch' && github.event.client_payload.manifest) || '' }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ (github.event_name == 'workflow_dispatch' && inputs.proxy) || (github.event_name == 'repository_dispatch' && github.event.client_payload.proxy) || '' }}
@@ -266,6 +267,7 @@ jobs:
         id: repo-sync
         uses: ./.github/actions/repo-syncer
         with:
+          manifest_ref: ${{ env.RECIPE_REF }}
           manifest: ${{ (github.event_name == 'workflow_dispatch' && inputs.manifest) || (github.event_name == 'repository_dispatch' && github.event.client_payload.manifest) || '' }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ (github.event_name == 'workflow_dispatch' && inputs.proxy) || (github.event_name == 'repository_dispatch' && github.event.client_payload.proxy) || '' }}
@@ -325,6 +327,7 @@ jobs:
         id: repo-sync
         uses: ./.github/actions/repo-syncer
         with:
+          manifest_ref: ${{ env.RECIPE_REF }}
           manifest: ${{ (github.event_name == 'workflow_dispatch' && inputs.manifest) || (github.event_name == 'repository_dispatch' && github.event.client_payload.manifest) || '' }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ (github.event_name == 'workflow_dispatch' && inputs.proxy) || (github.event_name == 'repository_dispatch' && github.event.client_payload.proxy) || '' }}
@@ -364,6 +367,7 @@ jobs:
         id: repo-sync
         uses: ./.github/actions/repo-syncer
         with:
+          manifest_ref: ${{ env.RECIPE_REF }}
           manifest: ${{ (github.event_name == 'workflow_dispatch' && inputs.manifest) || (github.event_name == 'repository_dispatch' && github.event.client_payload.manifest) || '' }}
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           proxy: ${{ (github.event_name == 'workflow_dispatch' && inputs.proxy) || (github.event_name == 'repository_dispatch' && github.event.client_payload.proxy) || '' }}
