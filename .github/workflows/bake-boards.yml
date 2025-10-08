@@ -332,7 +332,7 @@ jobs:
           chip_board: ${{ matrix.board }}
           merged_manifest_path: ${{ steps.repo-sync.outputs.merged_manifest_path }}
           artifacts_name: "rootfs-${{ matrix.board }}"
-          if_skip_build: 'false'
+          if_skip_build: 'true'
 
   # Final image assembly (depends on all components)
   build-image:
