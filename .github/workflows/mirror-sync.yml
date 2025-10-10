@@ -33,7 +33,7 @@ jobs:
   sync-repository:
 
     permissions:
-    contents: write
+      contents: write
 
     if: ${{ github.repository_owner == 'diverger' }}
     runs-on: ubuntu-latest
