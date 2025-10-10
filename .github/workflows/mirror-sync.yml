@@ -25,8 +25,16 @@ on:
 env:
   MIRROR_REPO: ${{ secrets.MIRROR_REPO }}  # Format: username/repo-name
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   sync-repository:
+
+    permissions:
+    contents: write
+
     if: ${{ github.repository_owner == 'diverger' }}
     runs-on: ubuntu-latest
     steps:
