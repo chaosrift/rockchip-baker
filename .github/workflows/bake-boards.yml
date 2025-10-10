@@ -65,6 +65,10 @@ env:
   EFFECTIVE_RELEASE_TAG: ${{ github.event.inputs.release_tag || github.event.client_payload.release_tag || '' }}
   BUILD_TYPE: ${{ github.event.inputs.build_type || github.event.client_payload.build_type || 'nightly' }}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.release_tag || github.event.client_payload.release_tag || '' }}
+  cancel-in-progress: false
+
 jobs:
   # Job to determine build matrix based on available boards
   setup:
